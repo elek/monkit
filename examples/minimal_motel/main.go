@@ -11,13 +11,18 @@ import (
 	"time"
 
 	"github.com/spacemonkeygo/monkit/v3"
+	"github.com/spacemonkeygo/monkit/v3/environment"
+	"github.com/spacemonkeygo/monkit/v3/motel"
 	"github.com/spacemonkeygo/monkit/v3/present"
+	"go.opentelemetry.io/otel"
 )
 
 var mon = monkit.Package()
 
 func main() {
-	//environment.Register(monkit.Default)
+	otel.SetTracerProvider(motel.NewTraceProvider(monkit.Default))
+	otel.SetMeterProvider(motel.NewMeterProvider(monkit.Default))
+	environment.Register(monkit.Default)
 
 	// graceful shutdown
 	sigc := make(chan os.Signal, 1)
@@ -42,8 +47,13 @@ func main() {
 
 }
 
+var tracer = otel.Tracer(monkit.CallerPackage(0))
+var meter = otel.Meter(monkit.CallerPackage(0))
+
 func DoStuff(ctx context.Context) (err error) {
-	defer mon.Task()(&ctx, "query", []interface{}{[]byte{1, 2, 3}, "args", time.Now()})(&err)
+	//defer mon.Task()(&ctx, "query", []interface{}{[]byte{1, 2, 3}, "args", time.Now()})(&err)
+	ctx, span := tracer.Start(ctx, "DoStuff")
+	defer span.End()
 
 	result, err := ComputeThing(ctx, 1, 2)
 	if err != nil {
@@ -68,7 +78,14 @@ func ComputeThing(ctx context.Context, arg1, arg2 int) (res int, err error) {
 	mon.RawVal("raw").Observe(1.0)
 	mon.RawValk(monkit.NewSeriesKey("rawk").WithTag("foo", "bar"), monkit.Sum, monkit.Count).Observe(1.0)
 	mon.BoolVal("was-4").Observe(res == 4)
-	mon.IntVal("res").Observe(int64(res))
+	//mon.IntVal("res").Observe(int64(res))
+
+	counter, err := meter.Int64Counter("res")
+	if err != nil {
+		return 0, err
+	}
+	counter.Add(ctx, int64(res))
+
 	mon.DurationVal("took").Observe(time.Second + time.Duration(rand.Intn(int(10*time.Second))))
 	mon.Counter("calls").Inc(1)
 	mon.Gauge("arg1", func() float64 { return float64(arg1) })

@@ -213,7 +213,7 @@ func (s *Scope) Task(tags ...SeriesTag) Task {
 			return nil
 		}
 		initOnce.Do(func() {
-			f = s.FuncNamed(callerFunc(3), tags...)
+			f = s.FuncNamed(CallerFunc(3), tags...)
 		})
 		s, exit := newSpan(*ctx, f, args, nil, nil)
 		if ctx != &unparented {

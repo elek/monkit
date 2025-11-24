@@ -19,7 +19,7 @@ import (
 	"strings"
 )
 
-func callerPackage(frames int) string {
+func CallerPackage(frames int) string {
 	var pc [1]uintptr
 	if runtime.Callers(frames+2, pc[:]) != 1 {
 		return "unknown"
@@ -33,7 +33,7 @@ func callerPackage(frames int) string {
 	return strings.Join(slash_pieces[:len(slash_pieces)-1], "/") + "/" + dot_pieces[0]
 }
 
-func callerFunc(frames int) string {
+func CallerFunc(frames int) string {
 	var pc [1]uintptr
 	if runtime.Callers(frames+3, pc[:]) != 1 {
 		return "unknown"

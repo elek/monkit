@@ -80,7 +80,7 @@ func (r *Registry) WithTransformers(t ...CallbackTransformer) *Registry {
 //
 // at the top of each package.
 func (r *Registry) Package() *Scope {
-	return r.ScopeNamed(callerPackage(1))
+	return r.ScopeNamed(CallerPackage(1))
 }
 
 // ScopeNamed is like Package, but lets you choose the name.
@@ -252,7 +252,7 @@ func Scopes(cb func(s *Scope)) { Default.Scopes(cb) }
 func Funcs(cb func(f *Func)) { Default.Funcs(cb) }
 
 // Package is just a wrapper around Default.Package
-func Package() *Scope { return Default.ScopeNamed(callerPackage(1)) }
+func Package() *Scope { return Default.ScopeNamed(CallerPackage(1)) }
 
 // Stats is just a wrapper around Default.Stats
 func Stats(cb func(key SeriesKey, field string, val float64)) { Default.Stats(cb) }

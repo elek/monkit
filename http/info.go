@@ -116,7 +116,7 @@ func TraceInfoFromHeader(header HeaderGetter, allowedBaggage ...string) (rv Trac
 	if strings.Contains(traceState, "sampled=true") {
 		return TraceInfo{
 			Sampled: true,
-			Baggage: bm,
+			Baggage:  bm,
 		}
 	}
 	return rv
